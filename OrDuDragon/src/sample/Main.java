@@ -15,18 +15,16 @@ import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 
 import javafx.scene.text.Font;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main extends Application {
-
-    List<List<Integer>> list = new ArrayList<List<Integer>>();
     List<Point> listPoint = new ArrayList<Point>();
+    List<List<Integer>> list = new ArrayList<List<Integer>>();
     Text texte;
 
     public void LirePosition(Socket s){
@@ -116,8 +114,6 @@ public class Main extends Application {
             box.getChildren().add(iv1);
             root.getChildren().add(box);
 
-            LirePosition(s);
-
             texte = new Text(100, 100, "");
             texte.setFont(new Font(40));
             texte.setFill(Color.BLACK);
@@ -128,16 +124,64 @@ public class Main extends Application {
             stage.setHeight(200);
             stage.setScene(scene);
             stage.sizeToScene();
+
+            LirePosition(s);
             AfficherLiaison(root);
             SetPosition(root, list);
-            stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e,root));
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    RefreshMap();
+                }
+            });
+            t.start();
             stage.show();
-
+            stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e, root));
         }catch (IOException ioe){
             ioe.printStackTrace();
         }
     }
 
+    public void RefreshMap()
+    {
+        try {
+            int port = 51006;
+            String ip = "149.56.47.97";
+            Socket s = new Socket(ip, port);
+            BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+            while(true) {
+                writer.print("\n");
+                String line = rd.readLine();
+                System.out.println(line);
+                String[] parts = line.split(" ");
+                for (int i = 0; i < parts.length; i++)
+                {
+                    String[] t = parts[i].split(":");
+                    if (t[1].equals("T"))
+                    {
+                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.GREEN);
+                    }
+                    if (t[1].equals("P"))
+                    {
+                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.YELLOW);
+                    }
+                    if (t[1].equals("M"))
+                    {
+                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.LAVENDER);
+                    }
+                    if (t[1].equals("G"))
+                    {
+                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.LIGHTBLUE);
+                    }
+                }
+                writer.flush();
+            }
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         launch(args);

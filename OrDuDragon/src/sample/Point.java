@@ -8,7 +8,6 @@ import javafx.scene.shape.Circle;
  * Created by Charles, Jonathan and Philippe on 3/12/2017.
  */
 public class Point extends Circle {
-
     int numero;
     int X;
     int Y;
