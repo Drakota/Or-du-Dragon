@@ -1,4 +1,4 @@
-# L'or du Dragon
+﻿# L'or du Dragon
 ## Liens
 http://prog101.com/travaux/dragon/
 
@@ -9,7 +9,7 @@ http://salihayacoub.com/420Keh/Semaine%205/2017-TP1BD_IntegrationVersion1.pdf
 * Écrire des procédures/des fonctions et triggers
 * Concevoir et réaliser une application JDBC
 
-## Mise en contexte L’or du dragon :
+## Mise en contexte L’or du dragon
 Dans le cadre du projet l’OR du dragon, vous devez concevoir une base de données pour
 la gestion, le déroulement et l’administration du jeu.
 
