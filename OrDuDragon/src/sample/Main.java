@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main extends Application {
-    List<Point> listPoint = new ArrayList<Point>();
-    List<List<Integer>> list = new ArrayList<List<Integer>>();
+    public static List<Noeud> listNoeud = new ArrayList<Noeud>();
+    Noeud LastSelectedNode;
     Text texte;
 
     public void LirePosition(Socket s){
@@ -36,14 +36,14 @@ public class Main extends Application {
                 List<Integer> listpoint = new ArrayList<Integer>();
                 Scanner scanner = new Scanner(line);
                 while (scanner.hasNextInt()) listpoint.add(scanner.nextInt());
-                list.add(listpoint);
+                listNoeud.add(new Noeud(listpoint));
             }
             while ((line = rd.readLine()) != null) {
                 List<Integer> listpoint = new ArrayList<Integer>();
                 Scanner scanner = new Scanner(line);
                 while (scanner.hasNextInt()) listpoint.add(scanner.nextInt());
                 for (int i = 1; i < listpoint.size(); i++) {
-                    list.get(listpoint.get(0)).add(listpoint.get(i));
+                    listNoeud.get(listpoint.get(0)).list.add(listpoint.get(i));
                 }
             }
         }
@@ -51,48 +51,52 @@ public class Main extends Application {
                  ioe.printStackTrace();
         }
     }
+    public void RestartMap()
+    {
+        for (int i = 0; i < listNoeud.size(); i++)
+        {
+            if (listNoeud.get(i).list.get(3) == 1) listNoeud.get(i).setFill(Color.WHITE);
+            else if (listNoeud.get(i).list.get(3) == 0) listNoeud.get(i).setFill(Color.RED);
+        }
+    }
 
-    public void SetPosition(Group root, List<List<Integer>> list) {
-            for (int i = 0; i < list.size(); i++)
+    public void SetPosition(Group root) {
+            for (int i = 0; i < listNoeud.size(); i++)
             {
-                Point pointTemp = new Point(list.get(i).get(0), list.get(i).get(1), list.get(i).get(2), list.get(i).get(3));
                 Button buttonTemp = new Button();
-                listPoint.add(pointTemp);
-                pointTemp.Afficher(root);
+                root.getChildren().add(listNoeud.get(i));
                 System.out.println("---------------");
-                System.out.println("Num : " + list.get(i).get(0));
-                System.out.println("X : " + list.get(i).get(1));
-                System.out.println("Y : " + list.get(i).get(2));
-                System.out.println("Disponibilite : "+ list.get(i).get(3));
+                System.out.println("Num : " + listNoeud.get(i).list.get(0));
+                System.out.println("X : " + listNoeud.get(i).list.get(1));
+                System.out.println("Y : " + listNoeud.get(i).list.get(2));
+                System.out.println("Disponibilite : "+ listNoeud.get(i).list.get(3));
             }
     }
 
     public void AfficherLiaison(Group root){
-            for (int i = 0; i < list.size(); i++)
+            for (int i = 0; i < listNoeud.size(); i++)
             {
-                for (int y = 4; y < list.get(i).size(); y++)
+                for (int y = 4; y < listNoeud.get(i).list.size(); y++)
                 {
-                    Line ligne = new Line(list.get(i).get(1), list.get(i).get(2), list.get(list.get(i).get(y)).get(1), list.get(list.get(i).get(y)).get(2));
+                    Line ligne = new Line(listNoeud.get(i).list.get(1), listNoeud.get(i).list.get(2),
+                            listNoeud.get(listNoeud.get(i).list.get(y)).list.get(1), listNoeud.get(listNoeud.get(i).list.get(y)).list.get(2));
                     ligne.setStroke(Color.BLACK);
                     ligne.setStrokeWidth(2);
                     root.getChildren().add(ligne);
                 }
             }
     }
-
     public void gererClic(MouseEvent e,Group root) {
+        if(LastSelectedNode != null) listNoeud.get(LastSelectedNode.list.get(0)).setFill(LastSelectedNode.getFill());
         texte.setText(null);
         if (e.getTarget() instanceof Circle) {
             Circle ptn = (Circle) e.getTarget();
-            for(int i=0;i<listPoint.size();++i){
-                if(ptn.getCenterX() == listPoint.get(i).GetX() && ptn.getCenterY() == listPoint.get(i).GetY()) {
-                    System.out.println("Noeud selectionné : " + listPoint.get(i).GetNumero());
-                    texte.setText("Noeud selectionné : "+ listPoint.get(i).GetNumero());
-                    Circle cercle = new Circle(listPoint.get(i).GetX(), listPoint.get(i).GetY(), 10);
-                    cercle.setStroke(Color.BLACK);
-                    cercle.setFill(Color.BLUE);
-                    cercle.setStrokeWidth(1);
-                    root.getChildren().add(cercle);
+            for(int i = 0; i < listNoeud.size(); ++i){
+                if(ptn.getCenterX() == listNoeud.get(i).list.get(1) && ptn.getCenterY() == listNoeud.get(i).list.get(2)) {
+                    LastSelectedNode = listNoeud.get(i);
+                    System.out.println("Noeud selectionné : " + listNoeud.get(i).list.get(0));
+                    texte.setText("Noeud selectionné : "+ listNoeud.get(i).list.get(0));
+                    listNoeud.get(i).setFill(Color.BLUE);
                 }
             }
         }
@@ -100,6 +104,7 @@ public class Main extends Application {
 
     @Override public void start(Stage stage) {
         try {
+
             String imgName = "nowhereland.png";
             int port = 51005;
             String ip = "149.56.47.97";
@@ -127,7 +132,8 @@ public class Main extends Application {
 
             LirePosition(s);
             AfficherLiaison(root);
-            SetPosition(root, list);
+            SetPosition(root);
+
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -135,9 +141,9 @@ public class Main extends Application {
                 }
             });
             t.start();
-            stage.show();
             stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e, root));
-        }catch (IOException ioe){
+            stage.show();
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
@@ -154,26 +160,20 @@ public class Main extends Application {
                 writer.print("\n");
                 String line = rd.readLine();
                 System.out.println(line);
+                if (!line.equals(" ")) RestartMap();
                 String[] parts = line.split(" ");
                 for (int i = 0; i < parts.length; i++)
                 {
                     String[] t = parts[i].split(":");
-                    if (t[1].equals("T"))
-                    {
-                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.GREEN);
-                    }
-                    if (t[1].equals("P"))
-                    {
-                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.YELLOW);
-                    }
-                    if (t[1].equals("M"))
-                    {
-                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.LAVENDER);
-                    }
-                    if (t[1].equals("G"))
-                    {
-                        listPoint.get(Integer.parseInt(t[0])).setFill(Color.LIGHTBLUE);
-                    }
+                    if (t[1].equals("T")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.GREEN);
+                    if (t[1].equals("P")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.YELLOW);
+                    if (t[1].equals("M")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.DARKGREEN);
+                    if (t[1].equals("G")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.LIGHTGREEN);
+                    if (t[1].equals("J")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.ROYALBLUE);
+                    if (t[1].equals("D")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.ORANGE);
+                    if (t[1].equals("A")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.BROWN);
+                    if (t[1].equals("N")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.BLACK);
+                    if (t[1].equals("C")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.DARKGREY);
                 }
                 writer.flush();
             }
