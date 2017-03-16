@@ -81,7 +81,7 @@ public class Main extends Application {
                     Line ligne = new Line(listNoeud.get(i).list.get(1), listNoeud.get(i).list.get(2),
                             listNoeud.get(listNoeud.get(i).list.get(y)).list.get(1), listNoeud.get(listNoeud.get(i).list.get(y)).list.get(2));
                     ligne.setStroke(Color.BLACK);
-                    ligne.setStrokeWidth(2);
+                    ligne.setStrokeWidth(4);
                     root.getChildren().add(ligne);
                 }
             }
@@ -95,7 +95,8 @@ public class Main extends Application {
                 if(ptn.getCenterX() == listNoeud.get(i).list.get(1) && ptn.getCenterY() == listNoeud.get(i).list.get(2)) {
                     LastSelectedNode = listNoeud.get(i);
                     System.out.println("Noeud selectionné : " + listNoeud.get(i).list.get(0));
-                    texte.setText("Noeud selectionné : "+ listNoeud.get(i).list.get(0));
+                    texte.setText("Noeud selectionné : "+ listNoeud.get(i).list.get(0) + "\n" +
+                    "Coordonnées : " + "X : " + listNoeud.get(i).list.get(1) + " Y : " + listNoeud.get(i).list.get(2));
                     listNoeud.get(i).setFill(Color.BLUE);
                 }
             }
@@ -119,8 +120,8 @@ public class Main extends Application {
             box.getChildren().add(iv1);
             root.getChildren().add(box);
 
-            texte = new Text(100, 100, "");
-            texte.setFont(new Font(40));
+            texte = new Text(0, 30, "");
+            texte.setFont(new Font(20));
             texte.setFill(Color.BLACK);
             root.getChildren().add(texte);
 

@@ -14,9 +14,10 @@ import java.util.List;
 public class Noeud extends Circle {
     List<Integer> list;
     public Noeud(List<Integer> List){
-        super(List.get(1), List.get(2), 10);
+        super(List.get(1), List.get(2), 15);
         list = List;
         setStroke(Color.BLACK);
+        setStrokeWidth(5);
         if (List.get(3) == 1)
             setFill(Color.WHITE);
         if (List.get(3) == 0)
