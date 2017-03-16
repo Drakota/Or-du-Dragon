@@ -87,19 +87,18 @@ public class Main extends Application {
             }
     }
     public void gererClic(MouseEvent e,Group root) {
-        if(LastSelectedNode != null) listNoeud.get(LastSelectedNode.list.get(0)).setFill(LastSelectedNode.getFill());
+        if(LastSelectedNode != null) {
+            LastSelectedNode.setStroke(Color.BLACK);
+            LastSelectedNode = null;
+        }
         texte.setText(null);
-        if (e.getTarget() instanceof Circle) {
-            Circle ptn = (Circle) e.getTarget();
-            for(int i = 0; i < listNoeud.size(); ++i){
-                if(ptn.getCenterX() == listNoeud.get(i).list.get(1) && ptn.getCenterY() == listNoeud.get(i).list.get(2)) {
-                    LastSelectedNode = listNoeud.get(i);
-                    System.out.println("Noeud selectionné : " + listNoeud.get(i).list.get(0));
-                    texte.setText("Noeud selectionné : "+ listNoeud.get(i).list.get(0) + "\n" +
-                    "Coordonnées : " + "X : " + listNoeud.get(i).list.get(1) + " Y : " + listNoeud.get(i).list.get(2));
-                    listNoeud.get(i).setFill(Color.BLUE);
-                }
-            }
+        if (e.getTarget() instanceof Noeud) {
+            Noeud ptn = (Noeud) e.getTarget();
+            ptn.setStroke(Color.BLUE);
+            LastSelectedNode = ptn;
+            System.out.println("Noeud selectionné : " + ptn.list.get(0));
+            texte.setText("Noeud selectionné : "+ ptn.list.get(0) + "\n" +
+                    "Coordonnées : " + "X : " + ptn.list.get(1) + " Y : " + ptn.list.get(2));
         }
     }
 
@@ -141,6 +140,7 @@ public class Main extends Application {
                     RefreshMap();
                 }
             });
+            t.setDaemon(true);
             t.start();
             stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e, root));
             stage.show();
