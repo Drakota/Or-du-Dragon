@@ -6,28 +6,31 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import javafx.scene.input.MouseEvent;
 
 import javafx.scene.text.Font;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main extends Application {
-
-    List<List<Integer>> list = new ArrayList<List<Integer>>();
-    List<Point> listPoint = new ArrayList<Point>();
+    public static List<Noeud> listNoeud = new ArrayList<Noeud>();
+    Noeud LastSelectedNode;
     Text texte;
+    Text textbtn = new Text("Rejoindre la partie");
+    Joueur j = new Joueur();
+    Boolean RejoindrePartie = false;
 
     public void LirePosition(Socket s){
         try {
@@ -38,14 +41,14 @@ public class Main extends Application {
                 List<Integer> listpoint = new ArrayList<Integer>();
                 Scanner scanner = new Scanner(line);
                 while (scanner.hasNextInt()) listpoint.add(scanner.nextInt());
-                list.add(listpoint);
+                listNoeud.add(new Noeud(listpoint));
             }
             while ((line = rd.readLine()) != null) {
                 List<Integer> listpoint = new ArrayList<Integer>();
                 Scanner scanner = new Scanner(line);
                 while (scanner.hasNextInt()) listpoint.add(scanner.nextInt());
                 for (int i = 1; i < listpoint.size(); i++) {
-                    list.get(listpoint.get(0)).add(listpoint.get(i));
+                    listNoeud.get(listpoint.get(0)).list.add(listpoint.get(i));
                 }
             }
         }
@@ -53,55 +56,71 @@ public class Main extends Application {
                  ioe.printStackTrace();
         }
     }
+    public void RestartMap()
+    {
+        for (int i = 0; i < listNoeud.size(); i++)
+        {
+            if (listNoeud.get(i).list.get(3) == 1) listNoeud.get(i).setFill(Color.WHITE);
+            else if (listNoeud.get(i).list.get(3) == 0) listNoeud.get(i).setFill(Color.RED);
+        }
+    }
 
-    public void SetPosition(Group root, List<List<Integer>> list) {
-            for (int i = 0; i < list.size(); i++)
+    public void SetPosition(Group root) {
+            for (int i = 0; i < listNoeud.size(); i++)
             {
-                Point pointTemp = new Point(list.get(i).get(0), list.get(i).get(1), list.get(i).get(2), list.get(i).get(3));
                 Button buttonTemp = new Button();
-                listPoint.add(pointTemp);
-                pointTemp.Afficher(root);
+                root.getChildren().add(listNoeud.get(i));
                 System.out.println("---------------");
-                System.out.println("Num : " + list.get(i).get(0));
-                System.out.println("X : " + list.get(i).get(1));
-                System.out.println("Y : " + list.get(i).get(2));
-                System.out.println("Disponibilite : "+ list.get(i).get(3));
+                System.out.println("Num : " + listNoeud.get(i).list.get(0));
+                System.out.println("X : " + listNoeud.get(i).list.get(1));
+                System.out.println("Y : " + listNoeud.get(i).list.get(2));
+                System.out.println("Disponibilite : "+ listNoeud.get(i).list.get(3));
             }
     }
 
     public void AfficherLiaison(Group root){
-            for (int i = 0; i < list.size(); i++)
+            for (int i = 0; i < listNoeud.size(); i++)
             {
-                for (int y = 4; y < list.get(i).size(); y++)
+                for (int y = 4; y < listNoeud.get(i).list.size(); y++)
                 {
-                    Line ligne = new Line(list.get(i).get(1), list.get(i).get(2), list.get(list.get(i).get(y)).get(1), list.get(list.get(i).get(y)).get(2));
+                    Line ligne = new Line(listNoeud.get(i).list.get(1), listNoeud.get(i).list.get(2),
+                            listNoeud.get(listNoeud.get(i).list.get(y)).list.get(1), listNoeud.get(listNoeud.get(i).list.get(y)).list.get(2));
                     ligne.setStroke(Color.BLACK);
-                    ligne.setStrokeWidth(2);
+                    ligne.setStrokeWidth(4);
                     root.getChildren().add(ligne);
                 }
             }
     }
-
     public void gererClic(MouseEvent e,Group root) {
         texte.setText(null);
-        if (e.getTarget() instanceof Circle) {
-            Circle ptn = (Circle) e.getTarget();
-            for(int i=0;i<listPoint.size();++i){
-                if(ptn.getCenterX() == listPoint.get(i).GetX() && ptn.getCenterY() == listPoint.get(i).GetY()) {
-                    System.out.println("Noeud selectionné : " + listPoint.get(i).GetNumero());
-                    texte.setText("Noeud selectionné : "+ listPoint.get(i).GetNumero());
-                    Circle cercle = new Circle(listPoint.get(i).GetX(), listPoint.get(i).GetY(), 10);
-                    cercle.setStroke(Color.BLACK);
-                    cercle.setFill(Color.BLUE);
-                    cercle.setStrokeWidth(1);
-                    root.getChildren().add(cercle);
-                }
+        if(LastSelectedNode != null) {
+            LastSelectedNode.setStroke(Color.BLACK);
+            LastSelectedNode = null;
+        }
+        if (e.getTarget() instanceof Noeud) {
+            Noeud ptn = (Noeud) e.getTarget();
+            if(e.getClickCount() == 2) {
+                j.GOTO(ptn.list.get(0));
             }
+            ptn.setStroke(Color.BLUE);
+            LastSelectedNode = ptn;
+            texte.setText("Noeud selectionné : "+ ptn.list.get(0) + "\n" +
+                    "Coordonnées : " + "X : " + ptn.list.get(1) + " Y : " + ptn.list.get(2));
+        }
+        if (e.getTarget() instanceof Rectangle) {
+            if (!RejoindrePartie)
+            {
+                j.CONNEXION();
+                RejoindrePartie = true;
+                textbtn.setText("BUILD");
+            }
+            else j.BUILD();
         }
     }
 
     @Override public void start(Stage stage) {
         try {
+
             String imgName = "nowhereland.png";
             int port = 51005;
             String ip = "149.56.47.97";
@@ -116,10 +135,19 @@ public class Main extends Application {
             box.getChildren().add(iv1);
             root.getChildren().add(box);
 
-            LirePosition(s);
+            Rectangle btn = new Rectangle(130, 70);
+            btn.setFill(Color.WHITE);
+            btn.setStroke(Color.BLACK);
+            btn.setStrokeWidth(3);
+            StackPane stack = new StackPane();
+            stack.setLayoutX(1450);
+            stack.setLayoutY(800);
+            stack.getChildren().addAll(btn, textbtn);
+            root.getChildren().add(stack);
 
-            texte = new Text(100, 100, "");
-            texte.setFont(new Font(40));
+
+            texte = new Text(0, 30, "");
+            texte.setFont(new Font(20));
             texte.setFill(Color.BLACK);
             root.getChildren().add(texte);
 
@@ -128,16 +156,60 @@ public class Main extends Application {
             stage.setHeight(200);
             stage.setScene(scene);
             stage.sizeToScene();
-            AfficherLiaison(root);
-            SetPosition(root, list);
-            stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e,root));
-            stage.show();
 
-        }catch (IOException ioe){
+            LirePosition(s);
+            AfficherLiaison(root);
+            SetPosition(root);
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    RefreshMap();
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+            stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e, root));
+            stage.show();
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
 
+    public void RefreshMap()
+    {
+        try {
+            int port = 51006;
+            String ip = "149.56.47.97";
+            Socket s = new Socket(ip, port);
+            BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+            while(true) {
+                writer.print("\n");
+                String line = rd.readLine();
+                System.out.println(line);
+                if (!line.equals(" ")) RestartMap();
+                String[] parts = line.split(" ");
+                for (int i = 0; i < parts.length; i++)
+                {
+                    String[] t = parts[i].split(":");
+                    if (t[1].equals("T")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.GREEN);
+                    if (t[1].equals("P")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.YELLOW);
+                    if (t[1].equals("M")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.DARKGREEN);
+                    if (t[1].equals("G")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.LIGHTGREEN);
+                    if (t[1].equals("J")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.ROYALBLUE);
+                    if (t[1].equals("D")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.ORANGE);
+                    if (t[1].equals("A")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.BROWN);
+                    if (t[1].equals("N")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.BLACK);
+                    if (t[1].equals("C")) listNoeud.get(Integer.parseInt(t[0])).setFill(Color.DARKGREY);
+                }
+                writer.flush();
+            }
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         launch(args);
