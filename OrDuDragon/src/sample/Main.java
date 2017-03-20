@@ -6,9 +6,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -26,6 +28,9 @@ public class Main extends Application {
     public static List<Noeud> listNoeud = new ArrayList<Noeud>();
     Noeud LastSelectedNode;
     Text texte;
+    Text textbtn = new Text("Rejoindre la partie");
+    Joueur j = new Joueur();
+    Boolean RejoindrePartie = false;
 
     public void LirePosition(Socket s){
         try {
@@ -87,18 +92,29 @@ public class Main extends Application {
             }
     }
     public void gererClic(MouseEvent e,Group root) {
+        texte.setText(null);
         if(LastSelectedNode != null) {
             LastSelectedNode.setStroke(Color.BLACK);
             LastSelectedNode = null;
         }
-        texte.setText(null);
         if (e.getTarget() instanceof Noeud) {
             Noeud ptn = (Noeud) e.getTarget();
+            if(e.getClickCount() == 2) {
+                j.GOTO(ptn.list.get(0));
+            }
             ptn.setStroke(Color.BLUE);
             LastSelectedNode = ptn;
-            System.out.println("Noeud selectionné : " + ptn.list.get(0));
             texte.setText("Noeud selectionné : "+ ptn.list.get(0) + "\n" +
                     "Coordonnées : " + "X : " + ptn.list.get(1) + " Y : " + ptn.list.get(2));
+        }
+        if (e.getTarget() instanceof Rectangle) {
+            if (!RejoindrePartie)
+            {
+                j.CONNEXION();
+                RejoindrePartie = true;
+                textbtn.setText("BUILD");
+            }
+            else j.BUILD();
         }
     }
 
@@ -118,6 +134,17 @@ public class Main extends Application {
             HBox box = new HBox();
             box.getChildren().add(iv1);
             root.getChildren().add(box);
+
+            Rectangle btn = new Rectangle(130, 70);
+            btn.setFill(Color.WHITE);
+            btn.setStroke(Color.BLACK);
+            btn.setStrokeWidth(3);
+            StackPane stack = new StackPane();
+            stack.setLayoutX(1450);
+            stack.setLayoutY(800);
+            stack.getChildren().addAll(btn, textbtn);
+            root.getChildren().add(stack);
+
 
             texte = new Text(0, 30, "");
             texte.setFont(new Font(20));
