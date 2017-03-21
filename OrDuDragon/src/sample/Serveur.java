@@ -106,6 +106,35 @@ public class Serveur {
         }
     }
 
+    public void Questions()
+    {
+        try {
+            String line;
+            int port = 51008;
+            String ip = "149.56.47.97";
+            Socket s = new Socket(ip, port);
+            BufferedReader rd = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+            writer.print("HELLO Saheelirais jocharphil123" + "\n");
+            writer.flush();
+            while(true) {
+                line = rd.readLine();
+                if (!line.equals(null)) {
+                    System.out.println(line);
+                    if (line.equals("AUB")) {
+                        writer.print("Quel est le hobbit le plus courageux?:Frodon:Sam:Merry:Pippin:1");
+                        writer.flush();
+                    }
+                }
+                //if (!line.equals(" ")) RestartMap();
+                //String[] parts = line.split(" ");
+            }
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
     public void RestartMap()
     {
         for (int i = 0; i < listNoeud.size(); i++)

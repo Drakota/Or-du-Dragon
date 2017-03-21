@@ -25,6 +25,13 @@ public class Main extends Application {
     Text texte;
     Boolean RejoindrePartie = false;
     Joueur j = new Joueur();
+    Serveur sv = new Serveur();
+    Thread q = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            sv.Questions();
+        }
+    });
 
     public void gererClic(MouseEvent e,Group root) {
         texte.setText(null);
@@ -37,9 +44,13 @@ public class Main extends Application {
             if(e.getClickCount() == 2) {
                 if (!RejoindrePartie) {
                     j.CONNEXION();
+                    q.start();
                     RejoindrePartie = true;
                 }
-                else j.GOTO(ptn.list.get(0));
+                else
+                {
+                    j.GOTO(ptn.list.get(0));
+                }
             }
             ptn.setStroke(Color.BLUE);
             LastSelectedNode = ptn;
@@ -58,7 +69,6 @@ public class Main extends Application {
     }
 
     @Override public void start(Stage stage) {
-            Serveur sv = new Serveur();
             String imgName = "nowhereland.png";
 
             ImageView iv1 = new ImageView(getClass().getResource(imgName).toExternalForm());
@@ -96,6 +106,7 @@ public class Main extends Application {
             });
             t.setDaemon(true);
             t.start();
+            q.setDaemon(true);
             stage.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> gererClic(e, root));
             stage.show();
     }
