@@ -15,6 +15,9 @@ public class Joueur {
 
     public Joueur()
     {
+    }
+
+    public void CONNEXION() {
         try {
             port = 51007;
             ip = "149.56.47.97";
@@ -25,21 +28,34 @@ public class Joueur {
         catch (IOException ioe) {
             ioe.printStackTrace();
         }
-    }
-
-    public void CONNEXION() {
         writer.print("HELLO Saheelirais jocharphil123" + "\n");
         writer.flush();
     }
 
     public void GOTO(int NodeId) {
-        writer.print("GOTO " + NodeId + "\n");
-        writer.flush();
+        if(s != null) {
+            writer.print("GOTO " + NodeId + "\n");
+            writer.flush();
+        }
     }
 
     public void BUILD() {
-        writer.print("BUILD" + "\n");
-        writer.flush();
+        if(s != null) {
+            writer.print("BUILD" + "\n");
+            writer.flush();
+        }
+    }
+
+    public  void QUIT() {
+        if(s != null) {
+            writer.print("QUIT" + "\n");
+            writer.flush();
+            try {
+                s.close();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
     }
 
 }
